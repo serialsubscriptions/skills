@@ -54,7 +54,7 @@ export function getSSI() {
 
 | Parameter | Required | Description |
 |-----------|----------|-------------|
-| `issuerBaseUrl` | Yes | OIDC issuer base URL |
+| `issuerBaseUrl` | Yes | OIDC issuer base URL. Typical origin for `SSIProjectApi` |
 | `clientId` | Yes | OAuth2 client ID |
 | `clientSecret` | Yes | OAuth2 client secret |
 | `redirectUri` | No | OAuth2 redirect URI for callback |
@@ -99,7 +99,7 @@ interface CacheInitOpts {
 
 | Variable | Description |
 |----------|-------------|
-| `SSI_ISSUER_BASE_URL` | OIDC issuer base URL |
+| `SSI_ISSUER_BASE_URL` | OIDC issuer base URL. Also the typical origin for `SSIProjectApi` (and often for `ssi.plans()` / `ssi.usage()`) |
 | `SSI_CLIENT_ID` | OAuth2 client ID |
 | `SSI_CLIENT_SECRET` | OAuth2 client secret |
 | `SSI_REDIRECT_URI` | OAuth2 redirect URI |
