@@ -12,4 +12,4 @@ npx skills add serialsubscriptions/skills
 
 | Skill | Description |
 |-------|-------------|
-| [ssi-platform-integration](ssi-platform-integration/) | Session management, authentication, subscription plans, usage reporting, and caching via `@serialsubscriptions/platform-integration` |
+| [ssi-platform-integration](ssi-platform-integration/) | Session management, authentication, subscription plans, usage reporting, platform project CRUD (`SSIProjectApi`), and caching via `@serialsubscriptions/platform-integration` |

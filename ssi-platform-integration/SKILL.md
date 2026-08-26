@@ -3,8 +3,10 @@ name: ssi-platform-integration
 description: >-
   Integrate the @serialsubscriptions/platform-integration npm package for
   session management, authentication, subscription plan management, usage
-  reporting, and caching. Use when adding SSI auth, sessions, plans, limits,
-  usage tracking, or the createSSI factory to a Next.js or Node.js project.
+  reporting, platform project CRUD (SSIProjectApi), and caching. Use when
+  adding SSI auth, sessions, plans, limits, usage tracking, project
+  create/list/update/delete, or the createSSI factory to a Next.js or Node.js
+  project.
 license: MIT
 compatibility: Requires Node.js 18+, Next.js 15+, and Redis (production) or memory backend (dev)
 metadata:
@@ -14,7 +16,7 @@ metadata:
 
 # SSI Platform Integration
 
-Integrate `@serialsubscriptions/platform-integration` into a Next.js or Node.js backend. The package provides session management, OAuth2/OIDC auth, subscription plan hydration, usage metering, and a caching layer.
+Integrate `@serialsubscriptions/platform-integration` into a Next.js or Node.js backend. The package provides session management, OAuth2/OIDC auth, subscription plan hydration, usage metering, platform project CRUD (`SSIProjectApi`), and a caching layer.
 
 ## Install
 
@@ -55,6 +57,8 @@ The `ssi` object exposes these factory methods:
 | `ssi.plans(domain)` | `SubscribedPlanManager` | Fetch/hydrate subscription plans, features, limits |
 | `ssi.usage(domain, token)` | `UsageApi` | Report and query subscription usage events |
 | `ssi.cache` | `SSICache` | Namespaced cache (Redis or memory) |
+
+Project CRUD is **not** a `createSSI()` factory method. Use `new SSIProjectApi(domain)` directly (see [SSIProjectApi](#ssiprojectapi)).
 
 ## Required Environment Variables
 
@@ -206,6 +210,34 @@ const projectUsage = await usage.getProjectUsageAll(42);
 
 See [references/USAGE-API.md](references/USAGE-API.md) for the complete API.
 
+## SSIProjectApi
+
+JSON:API client for Drupal **project** entities on the SSI platform. Construct it directly — it is not available as `ssi.projects()`.
+
+The constructor `domain` is **typically the same as `SSI_ISSUER_BASE_URL`**. Default path: `/jsonapi/project/project`.
+
+```typescript
+import { SSIProjectApi } from '@serialsubscriptions/platform-integration';
+
+const client = new SSIProjectApi(process.env.SSI_ISSUER_BASE_URL!);
+client.setBearerToken(accessToken); // session access_token, not id_token
+
+const listed = await client.list({ filters: { status: 'active' } });
+const one = await client.get(uuid);
+const created = await client.create({ name: 'New Project' }, {
+  relationships: {
+    user_id: { type: 'user--user', id: userUuid },
+    organization_owner: { type: 'organization--organization', id: organizationUuid },
+  },
+});
+await client.update(uuid, { status: 'completed' });
+await client.delete(uuid);
+```
+
+`get` / `update` / `delete` take the JSON:API **UUID**, not the numeric `project_id` used by plans and usage.
+
+See [references/SSI-PROJECT-API.md](references/SSI-PROJECT-API.md) for the complete API.
+
 ## SSICache
 
 Namespaced caching with memory or Redis backends. Automatically configured by `createSSI()`:
@@ -238,13 +270,15 @@ When integrating `@serialsubscriptions/platform-integration` into a project:
 6. Use `SessionClient.getSessionClient()` on the frontend for session state
 7. Use `ssi.plans(domain)` + `setBearerToken(accessToken)` for subscription data
 8. Use `ssi.usage(domain, token)` for usage metering
-9. Always use `sessionRoles` constants for role checks
-10. One `SessionManager` per request — never share across requests
+9. Use `new SSIProjectApi(process.env.SSI_ISSUER_BASE_URL!)` + `setBearerToken(accessToken)` for platform project CRUD
+10. Always use `sessionRoles` constants for role checks
+11. One `SessionManager` per request — never share across requests
 
 ## Key Rules
 
 - **One session per request**: `ssi.session(req)` binds to the current request's cookie. Never reuse across requests.
-- **access_token for API calls**: `SessionManager` stores id_token, access_token, and refresh_token. Use `access_token` for `SubscribedPlanManager` and external APIs.
+- **access_token for API calls**: `SessionManager` stores id_token, access_token, and refresh_token. Use `access_token` for `SubscribedPlanManager`, `SSIProjectApi`, and external APIs.
+- **Project CRUD via SSIProjectApi**: Construct with `SSI_ISSUER_BASE_URL`. Use UUID for get/update/delete; numeric `project_id` is for plans/usage only.
 - **`requireAuth()` for route protection**: Prefer `session.requireAuth({ roles: ... })` over manual `hasRole()` + `getClaim()` chains. It returns a discriminated union with `status` codes.
 - **Batch usage events**: Use `reportEvents([...])` over multiple `reportEvent()` calls — single HTTP request, atomic transaction.
 - **Automatic token refresh**: `getSessionData()` and `getClaim()` automatically refresh tokens when < 60s remaining. Don't implement manual refresh.
@@ -256,4 +290,5 @@ When integrating `@serialsubscriptions/platform-integration` into a project:
 - [SessionClient API](references/SESSION-CLIENT.md) — frontend session client
 - [SubscribedPlanManager API](references/SUBSCRIBED-PLAN-MANAGER.md) — plans, features, limits
 - [UsageApi API](references/USAGE-API.md) — usage reporting and querying
+- [SSIProjectApi API](references/SSI-PROJECT-API.md) — platform project list/get/create/update/delete
 - [SSICache API](references/CACHE.md) — caching layer
