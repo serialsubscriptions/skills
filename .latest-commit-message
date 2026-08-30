@@ -1,0 +1,3 @@
+Document archived-plan list defaults on SubscribedPlanManager.
+
+Agents should treat list helpers as current-only unless includeArchived is set, and leave getPlanById unfiltered.
