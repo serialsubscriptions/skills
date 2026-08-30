@@ -168,9 +168,10 @@ const accessToken = await session.getSessionData(session.sessionId!, 'access_tok
 const plans = ssi.plans('https://account.example.com');
 plans.setBearerToken(accessToken as string);
 
-const allPlans = await plans.getAllPlans();
-const plan = await plans.getPlanById(1);
-const projectPlans = await plans.getPlansByProjectId(42);
+const allPlans = await plans.getAllPlans(); // excludes archived
+const plan = await plans.getPlanById(1); // unfiltered
+const projectPlans = await plans.getPlansByProjectId(42); // excludes archived
+// const archivedToo = await plans.getPlansByProjectId(42, { includeArchived: true });
 
 // Limit helpers
 if (plan) {

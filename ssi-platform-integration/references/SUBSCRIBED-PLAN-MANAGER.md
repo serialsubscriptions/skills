@@ -30,23 +30,33 @@ plans.setBearerToken(accessToken as string);
 
 Use the `access_token` from the session, **not** the `id_token`.
 
+## Subscription status
+
+`SUBSCRIPTION_STATUS.ACTIVE` (`active`) is a current subscription. `SUBSCRIPTION_STATUS.ARCHIVED` (`archived`) is inactive.
+
+List helpers exclude archived plans unless you pass `{ includeArchived: true }`. `getPlanById` and `SSISubscribedPlanApi.list` are unfiltered.
+
 ## Plan Methods
 
-### `getAllPlans(): Promise<SubscribedPlan[]>`
+### `getAllPlans(options?: ListPlansOptions): Promise<SubscribedPlan[]>`
 
-Returns all plans with features and limits attached.
+Returns current plans with features and limits attached. Pass `{ includeArchived: true }` to include archived rows.
 
 ### `getPlanById(id): Promise<SubscribedPlan | null>`
 
-Returns a single plan by internal numeric ID (`drupal_internal__id`).
+Returns a single plan by internal numeric ID (`drupal_internal__id`). Not filtered by archive status.
 
-### `getPlansByProjectId(projectId): Promise<SubscribedPlan[]>`
+### `getPlansByProjectId(projectId, options?: ListPlansOptions): Promise<SubscribedPlan[]>`
 
-Returns all plans for a project.
+Returns current plans for a project. Pass `{ includeArchived: true }` to include archived rows.
 
-### `getPlansByUserId(userId): Promise<SubscribedPlan[]>`
+### `getPlanForProject(projectId, options?: ListPlansOptions): Promise<SubscribedPlan | null>`
 
-Returns all plans for a user (internal user ID).
+Returns the first current plan for a project, or `null`.
+
+### `getPlansByUserId(userId, options?: ListPlansOptions): Promise<SubscribedPlan[]>`
+
+Returns current plans for a user (internal user ID).
 
 ### `getPlanByProjectId(plans, projectId): SubscribedPlan[]`
 
